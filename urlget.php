@@ -25,9 +25,13 @@ try{
     $author =  $item->find('span.author',0)->plaintext;
     $title =  $item->find('span.entrytitle a',0)->plaintext;
     $url =  $item->find('span.entrytitle a',0)->href;
+    // 本文取得
+    $html = file_get_html($url);
+    $entry = $html->find('div.entrybody',0)->plaintext;
+    echo $entry;
     try{
-    $stmt = $db->prepare('INSERT INTO entry(auth, title, url) values (?, ?, ?)');
-    $stmt->execute([$author, $title, $url]);
+    $stmt = $db->prepare('INSERT INTO entry(auth, title, url, entry) values (?, ?, ?, ?)');
+    $stmt->execute([$author, $title, $url, $entry]);
     echo 'runtime' . Date('Y/m/d H:i:s') . PHP_EOL;
     echo 'author : ' . $author . PHP_EOL;
     echo 'title  : ' . $title . PHP_EOL;
