@@ -8,6 +8,8 @@ CK = 'XXXXX'  # Consumer Key
 CS = 'XXXXX'  # Consumer Secret
 AT = 'XXXXX'  # Access Token
 AS = 'XXXXX'  # Access Token Secret
+
+# tweetを投稿する
 def tweet(tweet_text):
 # ツイート投稿用のURL
   url = 'https://api.twitter.com/1.1/statuses/update.json'
@@ -22,6 +24,54 @@ def tweet(tweet_text):
   else:
     print('Error: %d' % req.status_code)
 
+import sqlite3
+
+SEARCHWORDS = ['中村麗乃','麗乃','れにょ','生田']
+def get_new_entry(db_name):
+  conn = sqlite3.connect(db_name)
+  c = conn.cursor()
+
+  result = c.execute('''SELECT * FROM entry
+               WHERE title NOT IN (
+                 SELECT title FROM entry_python)''')
+
+# 最後insertする用命令文
+  insert_str = ''
+
+  for row in result:
+    insert_str += 'insert into entry_python values('\
+                + '"' +str(row[0]) + '",'\
+                + '"' +str(row[1]) + '",'\
+                + '"' +str(row[2]) + '",'\
+                + '"' +str(row[3]) + '");\n'
+                
+# 単語検索しようか
+    hit = False
+    for search_word in SEARCHWORDS:
+# auth
+      if search_word in row[1]:
+        hit = True
+# title
+      if search_word in row[2]:
+        hit = True
+# entry
+      if search_word in row[4]:
+        hit = True
+
+      if hit:
+# 投稿
+        tweet_text = 'さぁ、どうだ！\n'\
+                    + row[1] + ':' + row[2] + '\n'\
+                    + row[3]
+        print(tweet_text)
+        tweet(tweet_text)
+        break;
+# 検索し終わったエントリーは探索済みデータベースに追加
+  c.executescript(insert_str)
+      
+  conn.commit()
+  conn.close()
+
 if __name__ == '__main__':
   f = open(FILENAME, 'r')
   reader = csv.reader(f)
@@ -30,6 +80,4 @@ if __name__ == '__main__':
   AT = next(reader)[1]
   AS = next(reader)[1]
 
-  tweet('どうだ！pic.twitter.com/0BYxcQk54h')
-
-  print(CK,CS,AT,AS)
+  get_new_entry('entry.db')
