@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from requests_oauthlib import OAuth1Session
 import csv
+import sys
+from requests_oauthlib import OAuth1Session
 
 FILENAME = 'twitter_token.csv'
 CK = 'XXXXX'  # Consumer Key
@@ -23,10 +24,11 @@ def tweet(tweet_text):
     print('OK')
   else:
     print('Error: %d' % req.status_code)
+    sys.exit()
 
 import sqlite3
 
-SEARCHWORDS = ['中村麗乃','麗乃','れにょ','生田']
+SEARCHWORDS = ['中村麗乃','麗乃','れにょ','れのちゃん','3期','３期']
 def get_new_entry(db_name):
   conn = sqlite3.connect(db_name)
   c = conn.cursor()
@@ -44,7 +46,6 @@ def get_new_entry(db_name):
                 + '"' +str(row[1]) + '",'\
                 + '"' +str(row[2]) + '",'\
                 + '"' +str(row[3]) + '");\n'
-                
 # 単語検索しようか
     hit = False
     for search_word in SEARCHWORDS:
@@ -60,11 +61,11 @@ def get_new_entry(db_name):
 
       if hit:
 # 投稿
-        tweet_text = 'さぁ、どうだ！\n'\
-                    + row[1] + ':' + row[2] + '\n'\
-                    + row[3]
-        print(tweet_text)
+        tweet_text = row[1] + '\n'\
+                   + row[2] + '\n'\
+                   + row[3]
         tweet(tweet_text)
+        print(tweet_text)
         break;
 # 検索し終わったエントリーは探索済みデータベースに追加
   c.executescript(insert_str)
